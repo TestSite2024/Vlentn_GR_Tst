@@ -3,7 +3,7 @@
  *
  * depends on jQuery>=1.7
  */
-import {startParticles, stopParticles, startConfetti, stopConfetti} from './particles.js';
+/*import {startParticles, stopParticles, startConfetti, stopConfetti} from './particles.js';*/
 /*import {confetti} from 'https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/umd/confetti.js';*/
 var rnd;
 // locations of correct gender circles
@@ -146,7 +146,6 @@ var pct =new Array(9);
     function confetti_effect() {
         //defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
         
-        stopParticles();
         
         if(triggered==true) {
             return;
@@ -157,7 +156,26 @@ var pct =new Array(9);
         }
         triggered=true;
        
-        startConfetti();
+            var duration = 10 * 1000;
+             var end = Date.now() + duration;
+             var defaults = { startVelocity: 10, spread: 360, ticks: 70, zIndex: 0 };
+             var particleCount = 5 ;
+             (function frame() {
+             // launch a few confetti from the left edge
+             confetti({...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#FFFFFF']}
+             );
+             // and launch a few from the right edge
+             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },colors: ['#FFFFFF']}
+             );
+          
+             // keep going until we are out of time
+             if (Date.now() < end) {
+                 requestAnimationFrame(frame);
+                 
+                 return;
+             }
+            }());
+          
         setTimeout(function(){
             $("#resetbutton").show();
         }, 10000);
@@ -175,8 +193,7 @@ var pct =new Array(9);
         for (i = 0; i < scratchers.length; i++) {
             scratchers[i].reset();
         }
-        stopConfetti();
-        startParticles();
+        
         $('#tboy').hide();
         $('#boy').show();
         $('#or').show();
@@ -228,7 +245,6 @@ var pct =new Array(9);
         var scratchers = [];
         var pct = [];
         var i, i1;
-        
         // if (window.confirm('This scratch off contains sound when the gender is revealed. Do you want to continue with sound? (Ok:with sound, Cancel:without sound')) {
         //     nosound=false;
         //   } else {
