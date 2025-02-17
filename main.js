@@ -48,7 +48,7 @@ var pct =new Array(9);
     /**
      * Handle scratch event on a scratcher
      */
-    function checkpct() {
+    function checkpct(index) {
         var p = 15;
         var pct1 = pct[loc[rnd-1][0]-1];
         var pct2 = pct[loc[rnd-1][1]-1];
@@ -59,21 +59,27 @@ var pct =new Array(9);
         var pct6= pct[oloc[rnd-1][2]-1];
 
         if (!triggered) {
+            if (index == loc[rnd-1][0]||index == loc[rnd-1][1]||index ==loc[rnd-1][2]){
             if (pct1>0 && pct2>0 && pct3>0)  {
-                if (pct1<p || pct2<p || pct<p)  {
-                //document.getElementById("scratcher3Pct").innerHTML="Scratch MORE!";
-                if (!CrispyToast.clearall()){
-                    CrispyToast.success('Scratch MORE!',{ position: 'top-center' },{timeout: 3000});
+                    if (pct1<p || pct2<p || pct3<p)  {
+                        if (CrispyToast.toasts.length===0){
+                        CrispyToast.success('Scratch MORE!',{ position: 'top-center', timeout: 2000});
                     }
                 } 
             }
-            if ((pct4>p && pct5>p && pct6>p) && (pct1<p || pct2<p || pct3<p)) {
-                if (!CrispyToast.clearall()&&!triggered){
-                    CrispyToast.error('Scratch other circles. You havent find the gender yet!',{ position: 'top-center' },{timeout: 6000});
+            }
+            if (index == oloc[rnd-1][0]||index == oloc[rnd-1][1]|| index ==oloc[rnd-1][2]){
+                if ((pct4>p && pct5>p && pct6>p)) {
+                    if (CrispyToast.toasts.length===0){
+                        CrispyToast.error('Scratch other circles. You havent find the gender yet!',{ position: 'top-center',timeout: 2000});
+                    }
                     }
             } 
 
             if (pct1>p && pct2>p && pct3>p) {
+                if(CrispyToast.toasts.length!=0){
+                    CrispyToast.clearall();
+                }
                 $('#tboy').show();
                 $('#tboy').text(gendertext);
                 $('#tboy').css('color',colortxt);
@@ -95,11 +101,11 @@ var pct =new Array(9);
     };
     function scratcher1Changed(ev) {
         pct[0] = (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(1);
     };
     function scratcher2Changed(ev) {
         pct[1] = (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(2);
     };
     function scratcher3Changed(ev) {
         // Test every pixel. Very accurate, but might be slow on large
@@ -110,32 +116,32 @@ var pct =new Array(9);
         // inaccuracy:
 
         pct[2] = (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(3);
         
     };
     function scratcher4Changed(ev) {
         pct[3] = (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(4);
     };
     function scratcher5Changed(ev) {
         pct[4] = (this.fullAmount(40) * 100)|0;
-       checkpct();
+       checkpct(5);
     };
     function scratcher6Changed(ev) {
         pct[5]= (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(6);
     };
     function scratcher7Changed(ev) {
         pct[6] = (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(7);
     };
     function scratcher8Changed(ev) {
         pct[7] = (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(8);
     };
     function scratcher9Changed(ev) {
         pct[8] = (this.fullAmount(40) * 100)|0;
-        checkpct();
+        checkpct(9);
     };
     function randomInRange(min, max) {
         return Math.random() * (max - min) + min;
@@ -188,6 +194,7 @@ var pct =new Array(9);
     function onResetClicked(scratchers) {
         var i;
         pct = [];
+        CrispyToast.toasts=[];
         //$("#scratcher3Pct").hide();
         $("#resetbutton").hide();
         for (i = 0; i < scratchers.length; i++) {
