@@ -44,15 +44,13 @@ font-weight: 400;
 flex-direction: column;
 font-size: calc(5rem + 1vw);
 text-align: center;
-text-shadow: 4px 6px #e6e6e6;
+text-shadow: 3px 2px #ffffff;
 } 
-#or {
-  font-size: calc(3rem + 1vw);
-}
+
 .pagetop h3 {
 font-family: "Bona Nova SC", serif;
 flex-direction: column;
-font-size:calc(1.5rem + 0.6vw);
+font-size:calc(1.3rem + 0.6vw);
 color: #000000 !important;
 text-align: center;
 font-weight: 400;
@@ -89,7 +87,6 @@ white-space:normal;
   white-space: normal;
 }
 #boy{
-  line-height: 5vh;
   text-align: center;
 }
 #t1 {
@@ -122,7 +119,7 @@ white-space:normal;
   .pagetop h1 {
     font-size: calc(5rem + 3vw);
   }
- 
+
 }
 
 /* @media (max-width: 430px), (max-height:670px) {
@@ -146,15 +143,12 @@ white-space:normal;
 @media (min-width: 768px) and (min-height: 930px){ 
   
   .pagetop h3 {
-    font-size: calc(1.5rem + 1.2vw);
+    font-size: calc(1.5rem + 1vw);
   }
   .pagetop h1 {
     font-size: calc(5rem + 4vw);
   }
 
-  #boy{
-    line-height: 7vh !important;
-  }
   #scratcher-box {
     position:absolute;
     width: 30em;
@@ -166,8 +160,7 @@ white-space:normal;
   }  
   
 }
-/* landscape tablet mode */
-@media (min-height: 675px) and (min-width: 1024px){ 
+@media (min-height: 635px) and (min-width: 1024px){ 
   .pagetop h3 {
     font-size: calc(1.5rem + 1.2vh);
   } 
@@ -175,13 +168,12 @@ white-space:normal;
     font-size: calc(5rem + 3vw);
   }
 
-    #boy{
-    line-height: 12vh !important;
-  }
-
   .pagetop h4 {
     font-size: 2vh;
   }
+ #t1{
+  line-height: 0.8 !important;
+ }
   #scratcher-box {
     position:absolute;
     width: 26em;
@@ -197,8 +189,14 @@ white-space:normal;
     font-size: calc(5rem + 1.8vw);
   }
     .pagetop h3 {
-    font-size: calc(1.3rem + 0.5vw);
+    font-size: calc(1.2rem + 0.5vw);
   }
+  #t1 {
+    line-height: 0.8 !important;
+  }
+  .images{
+    max-width: 90% !important;
+  } 
   /* #mainbody {
     position: inherit;
       -webkit-transform-origin: top left;
@@ -207,9 +205,6 @@ white-space:normal;
       -o-transform-origin: top left;
       transform-origin: top left;
   } */
-  #boy {
-    line-height: 7vh !important;
-  }
 
   #scratcher-box {
     position:absolute;
@@ -230,8 +225,8 @@ white-space:normal;
   .pagetop h4 {
     font-size: calc(0.6rem + 0.6vw) ;
   }
-  #boy {
-    line-height: 12vh !important;
+  #t1 {
+    line-height: 0.7 !important;
   }
   .images{
     max-width: 70% !important;
@@ -244,7 +239,7 @@ white-space:normal;
   }
  
   #H3 {
-    line-height: 17px;
+    line-height: 0.8;
   }
 /*   #t1 {
     width: 300px;
