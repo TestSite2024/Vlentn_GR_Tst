@@ -5,13 +5,16 @@
  */
 /*import {startParticles, stopParticles, startConfetti, stopConfetti} from './particles.js';*/
 /*import {confetti} from 'https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/umd/confetti.js';*/
+var canvas = [];
+var scratchers = [];
+var checkinprogress = false;
 var rnd;
 // locations of correct gender circles
 var loc = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]];
 // location of other gender which will give scratch further warning
 var oloc = [[4,5,9],[1,2,7],[1,3,4],[3,5,8],[1,4,9],[1,2,7],[3,4,7],[1,2,6]];
 var pct =new Array(9);
-(function() {
+(function () {
     /**
      * Returns true if this browser supports canvas
      *
@@ -153,14 +156,14 @@ var pct =new Array(9);
         //defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
         
         
-        if(triggered==true) {
+        if(triggered == true) {
             return;
         }
         if (!nosound) {
-            soundHandle.volume=0.5;
+            soundHandle.volume = 0.5;
             soundHandle.play();
         }
-        triggered=true;
+        triggered = true;
        
             var duration = 10 * 1000;
              var end = Date.now() + duration;
@@ -218,6 +221,35 @@ var pct =new Array(9);
         soundHandle.currentTime = 0;    
         return false;
     };
+    function fitCanvastoDiv() {
+        if (checkinprogress) {
+            return;
+        }
+        checkinprogress=true;
+
+        setTimeout(function () {
+            
+            var ttd = $(canvas[0]).parent();
+            console.log(ttd);
+            for (let index = 0; index < scratchers.length; index++) {
+                // var ttd = document.getElementById('scratcher-box');
+                canvas[index].width = ttd.width();
+                canvas[index].height = canvas[index].width;
+                if(scratchers[index]) { 
+                    if (triggered) {
+                    scratchers[index].resetnoclear(true);
+                    } else {
+                    scratchers[index].resetnoclear(false);
+                    }
+                }     
+            }
+            checkinprogress=false;        
+            //alert(window.innerHeight + " " + window.innerWidth);
+
+        },500);
+            
+       
+    }
     
     /**
      * Assuming canvas works here, do all initial page setup
@@ -249,7 +281,6 @@ var pct =new Array(9);
     
     function initPage() {
         var scratcherLoadedCount = 0;
-        var scratchers = [];
         var pct = [];
         var i, i1;
         // if (window.confirm('This scratch off contains sound when the gender is revealed. Do you want to continue with sound? (Ok:with sound, Cancel:without sound')) {
@@ -257,6 +288,13 @@ var pct =new Array(9);
         //   } else {
         //     nosound=true;
         // }
+        $( window ).on({
+            orientationchange: function(e) {
+                fitCanvastoDiv();
+            },resize: function(e) {
+                fitCanvastoDiv();
+            }
+        });        
 
         surname = params.get('surname');
         if (surname !=null && surname.replace(/\s/g, '').length) {
@@ -273,21 +311,21 @@ var pct =new Array(9);
                 matrix: [0.49984879,0,0,0.49984879,-41.861374,-62.27708]
                         });
         }); */
-        //document.getElementById('intro').innerHTML= "This is a gender reveal scratch off for <strong>" + surname + "</strong> family. It contains sound when the gender is revealed. Do you want to continue with sound?";
+        //document.getElementById('intro').innerHTML = "This is a gender reveal scratch off for <strong>" + surname + "</strong> family. It contains sound when the gender is revealed. Do you want to continue with sound?";
         document.getElementById('surname').innerHTML= surname;
 
-        document.getElementById('id01').style.display='block';
+        document.getElementById('id01').style.display = 'block';
         $('.nosoundbtn').on("click", function (e) {
-            document.getElementById('id01').style.display='none';
-            nosound=true;
+            document.getElementById('id01').style.display = 'none';
+            nosound = true;
         });
         $('.withsoundbtn').on("click", function (e) {
-            document.getElementById('id01').style.display='none';
-            nosound=false;
-            if (soundHandle.currentTime!=0) {return;}
+            document.getElementById('id01').style.display = 'none';
+            nosound = false;
+            if (soundHandle.currentTime != 0) { return; }
                 soundHandle = document.getElementById('soundHandle');  
                 soundHandle.autoplay = true;
-                soundHandle.muted=false;
+                soundHandle.muted = false;
                 soundHandle.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
                 soundHandle.src = 'audio/celebrate.mp3';
                 soundHandle.play();
@@ -295,10 +333,11 @@ var pct =new Array(9);
         });
         document.addEventListener(
             "visibilitychange",
-             function(evt) {
+             function (evt) {
               if (document.visibilityState != "visible") {
                 soundHandle.pause();
-                soundHandle.currentTime=0;              }
+                soundHandle.currentTime = 0;              
+            }
             },
             false,
           );
@@ -314,14 +353,13 @@ var pct =new Array(9);
         function onScratcherLoaded(ev) {
             
             scratcherLoadedCount++;
-            $("table1").width($(window).width());
+            //$("table1").width($(window).width());
             if (scratcherLoadedCount == scratchers.length) {
-                // all scratchers loaded!
-    
                 // bind the reset button to reset all scratchers
-                $('#resetbutton').on('click', function() {
+                $('#resetbutton').on('click', function () {
                         onResetClicked(scratchers);
                     });
+                    fitCanvastoDiv();
     
                 // hide loading text, show instructions text
                 //$('#loading-text').hide();
@@ -330,12 +368,14 @@ var pct =new Array(9);
         };
     
         // create new scratchers
-        var scratchers = new Array(9);
-        rnd = 2
-
+        scratchers = new Array(9);
+        canvas = new Array(9);
+        rnd = 2;
+        
         for (i = 0; i < scratchers.length; i++) {
             i1 = i + 1;
             scratchers[i] = new Scratcher('scratcher' + i1);
+            canvas[i] = document.getElementById("scratcher" + i1);
     
             // set up this listener before calling setImages():
             scratchers[i].addEventListener('imagesloaded', onScratcherLoaded);
@@ -362,8 +402,9 @@ var pct =new Array(9);
         scratchers[7].addEventListener('scratchesended', scratcher8Changed);
         scratchers[8].addEventListener('scratchesended', scratcher9Changed);
 
-        var canvas = document.getElementById('scratcher1');
-        canvas.onmousemove = null;
+        // var canvas = document.getElementById('scratcher1');
+        // canvas.onmousemove = null;
+
         // Or if you didn't want to do it every scratch (to save CPU), you
         // can just do it on 'scratchesended' instead of 'scratch':
         //scratchers[2].addEventListener('scratchesended', scratcher3Changed);
@@ -372,7 +413,7 @@ var pct =new Array(9);
     /**
      * Handle page load
      */
-    $(function() {
+    $(function () {
         if (supportsCanvas()) {
             initPage();
         } else {

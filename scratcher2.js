@@ -79,6 +79,8 @@ Scratcher = (function() {
      * @param canvasId [string] the canvas DOM ID, e.g. 'canvas2'
      * @param backImage [string, optional] URL to background (bottom) image
      * @param frontImage [string, optional] URL to foreground (top) image
+     * @param pixels
+     * @param triggered {boolean}
      */
     function Scratcher(canvasId, backImage, frontImage) {
         this.canvas = {
@@ -128,14 +130,14 @@ Scratcher = (function() {
         var can = this.canvas.draw;
         var ctx = can.getContext("2d", { willReadFrequently: true });
         var count, total;
-        var pixels, pdata;
+        var pdata;
     
         if (!stride || stride < 1) { stride = 1; }
     
         stride *= 4; // 4 elements per pixel
         
-        pixels = ctx.getImageData(0, 0, can.width, can.height);
-        pdata = pixels.data;
+        this.pixels = ctx.getImageData(0, 0, can.width, can.height);
+        pdata = this.pixels.data;
         l = pdata.length; // 4 entries per pixel
     
         total = (l / stride)|0;
@@ -172,9 +174,11 @@ Scratcher = (function() {
      * arbitrary-sized images, whereas in its current form, it will dog out
      * if the images are large.
      */
-    Scratcher.prototype.recompositeCanvases = function() {
+    Scratcher.prototype.recompositeCanvases = function(clear) {
         var tempctx = this.canvas.temp.getContext('2d');
         var mainctx = this.canvas.main.getContext('2d');
+        var drawctx = this.canvas.draw.getContext('2d');
+        //var offCanvas = document.createElement('canvas');
         var w = this.canvas.temp.width;
         var h =this.canvas.temp.height;
     
@@ -187,6 +191,10 @@ Scratcher = (function() {
         tempctx.closePath();
         tempctx.clip();
         // Step 2: stamp the draw on the temp (source-over)
+        if(clear) {
+            drawctx.globalCompositeOperation = 'source-over';
+            drawctx.drawImage(this.image.back.img, 0, 0,this.image.back.img.width, this.image.back.img.height,0,0,w,h);
+        }
         tempctx.drawImage(this.canvas.draw, 0, 0);
         tempctx.beginPath();
         //tempctx.arc(0, 0, 50, 0, Math.PI * 2, true);
@@ -196,9 +204,10 @@ Scratcher = (function() {
         tempctx.closePath();
         tempctx.restore();
         // Step 3: stamp the background on the temp (!! source-atop mode !!)
+        if (!clear) {
         tempctx.globalCompositeOperation = 'source-atop';
-        tempctx.drawImage(this.image.back.img, 0, 0,this.image.back.img.width, this.image.back.img.height,0,0,this.canvas.temp.width,this.canvas.temp.height);
-    
+            tempctx.drawImage(this.image.back.img, 0, 0,this.image.back.img.width, this.image.back.img.height,0,0,w,h);
+        } 
         mainctx.save();
         mainctx.beginPath();
         draw(mainctx,w*0.5,0,w,w);
@@ -210,6 +219,8 @@ Scratcher = (function() {
         mainctx.closePath();
         mainctx.restore();
         // Step 5: stamp the temp on the display canvas (source-over)
+        mainctx.globalCompositeOperation = 'source-over';
+
         mainctx.drawImage(this.canvas.temp, 0, 0);
 
     };
@@ -245,8 +256,6 @@ Scratcher = (function() {
         
 
     };
-
-    
     /**
      * Draw a scratch line
      * 
@@ -282,6 +291,7 @@ Scratcher = (function() {
      */
     Scratcher.prototype._setupCanvases = function() {
         var c = this.canvas.main;
+    
         // create the temp and draw canvases, and set their dimensions
         // to the same as the main canvas:
         this.canvas.temp = document.createElement('canvas');
@@ -365,13 +375,75 @@ Scratcher = (function() {
     Scratcher.prototype.reset = function() {
         // clear the draw canvas
         this.canvas.draw.width = this.canvas.draw.width;
-    
-        this.recompositeCanvases();
+        this.pixels=null;
+        this.triggered=false;
+        this.recompositeCanvases(false);
     
         // call back if we have it
         this.dispatchEvent(this.createEvent('reset'));
     };
-    
+    Scratcher.prototype.clear = function() {
+        this.triggered = true;
+        this.recompositeCanvases(true);
+    }
+    Scratcher.prototype.resetnoclear = async function(clear) {
+        var c = this.canvas.main;
+        var cc = this.canvas.temp;
+        const resizeWidth = c.width >> 0
+        const resizeHeight = c.height >> 0
+       
+        var ratio=1;
+        
+        if (this.pixels && !clear){
+            
+           /*  const ibm = await window.createImageBitmap(this.pixels, 0, 0, this.canvas.draw.width, this.canvas.draw.width, {
+                resizeWidth, resizeHeight
+              })
+
+            if (c.width>cc.width) {
+                ratio = cc.width / c.width;
+            } else {
+                ratio = c.width / cc.width;
+            }
+        
+            this.canvas.temp.width  = this.canvas.draw.width = c.width;
+            this.canvas.temp.height = this.canvas.draw.height = c.height;
+
+            var ctx = this.canvas.draw.getContext('2d');
+         
+            ctx.drawImage(ibm,0,0);
+            this.pixels = ctx.getImageData(0,0,c.width,c.height); */
+            var newCanvas = $("<canvas>")
+            .attr("width", cc.width)
+            .attr("height", cc.height)[0];
+
+            newCanvas.getContext("2d").putImageData(this.pixels, 0, 0);
+
+            // Second canvas, for scaling
+            var scaleCanvas = $("<canvas>")
+            .attr("width", c.width)
+            .attr("height", c.height)[0];
+            var scaleCtx = scaleCanvas.getContext("2d");
+            ratio = c.width / cc.width;
+
+            scaleCtx.scale(ratio, ratio);
+            scaleCtx.drawImage(newCanvas, 0, 0);
+
+            this.pixels =  scaleCtx.getImageData(0, 0, scaleCanvas.width, scaleCanvas.height);
+            this.canvas.temp.width  = this.canvas.draw.width = c.width;
+            this.canvas.temp.height = this.canvas.draw.height = c.height;
+
+            var ctx = this.canvas.draw.getContext('2d');
+            ctx.putImageData(this.pixels, 0, 0);
+
+
+        } else {
+            this.canvas.temp.width = this.canvas.draw.width = c.width;
+            this.canvas.temp.height = this.canvas.draw.height = c.height;
+            
+        }
+        this.recompositeCanvases(clear);
+    };
     /**
      * returns the main canvas jQuery object for this scratcher
      */
